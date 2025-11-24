@@ -1,4 +1,4 @@
-import PiramideOlfativaUpdater from './components/OlfactoryPyramidUpdater'
+import PiramideOlfativaUpdater from './components/PiramideOlfativaUpdater'
 
 function App() {
   return (
