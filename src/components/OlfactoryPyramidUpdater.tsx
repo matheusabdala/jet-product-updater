@@ -12,7 +12,7 @@ interface PyramidData {
   base: Note[];
 }
 
-const OlfactoryPyramidUpdater: React.FC = () => {
+const PiramideOlfativaUpdater: React.FC = () => {
   const [htmlInput, setHtmlInput] = useState('');
   const [pyramid, setPyramid] = useState<PyramidData>({
     top: [],
@@ -385,4 +385,4 @@ ${generateSectionHTML('Notas de Base', pyramid.base)}
   );
 };
 
-export default OlfactoryPyramidUpdater;
+export default PiramideOlfativaUpdater;
