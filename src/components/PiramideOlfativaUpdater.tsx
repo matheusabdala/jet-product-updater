@@ -62,14 +62,16 @@ const PiramideOlfativaUpdater: React.FC = () => {
       if (!table) return [];
 
       const cells = Array.from(table.querySelectorAll('td'));
-      return cells.map(cell => {
-        const img = cell.querySelector('img');
-        const span = cell.querySelector('span');
-        return {
-          name: span?.textContent?.trim() || '',
-          imageUrl: img?.getAttribute('src') || ''
-        };
-      }).filter(note => note.name);
+      return cells
+        .map(cell => {
+          const img = cell.querySelector('img');
+          const span = cell.querySelector('span');
+          return {
+            name: span?.textContent?.trim() || '',
+            imageUrl: img?.getAttribute('src') || ''
+          };
+        })
+        .filter(note => note.name);
     };
 
     return {
@@ -90,6 +92,7 @@ const PiramideOlfativaUpdater: React.FC = () => {
     setPyramid(extractPyramid(htmlInput));
     setPyramidLoaded(true);
     setGeneratedHtml('');
+    setCopied(false);
   };
 
   const generatePyramidHTML = (): string => {
@@ -121,21 +124,30 @@ ${generateSectionHTML('Notas de Base', pyramid.base)}
   const generateUpdatedHtml = () => {
     const newPyramidHTML = generatePyramidHTML();
 
-    // Regex mais flexível: aceita outros atributos, aspas simples/dobras, etc.
+    // Regex mais flexível para achar a section correta
     const regex = /<section[^>]*id=["']section-piramide-olfativa["'][^>]*>[\s\S]*?<\/section>/i;
 
-    // Se achar a section, substitui; senão, só anexa no final (opcional)
     const updated = regex.test(originalHtml)
       ? originalHtml.replace(regex, newPyramidHTML)
       : `${originalHtml}\n${newPyramidHTML}`;
 
     setGeneratedHtml(updated);
+    setCopied(false);
   };
 
   const copyToClipboard = () => {
+    if (!generatedHtml) return;
     navigator.clipboard.writeText(generatedHtml);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // 🔹 Sempre que mexer na pirâmide, apagamos o HTML gerado
+  const resetGeneratedHtml = () => {
+    if (generatedHtml) {
+      setGeneratedHtml('');
+      setCopied(false);
+    }
   };
 
   const addNote = (level: keyof PyramidData) => {
@@ -143,6 +155,7 @@ ${generateSectionHTML('Notas de Base', pyramid.base)}
       ...prev,
       [level]: [...prev[level], { name: '', imageUrl: '' }]
     }));
+    resetGeneratedHtml();
   };
 
   const removeNote = (level: keyof PyramidData, index: number) => {
@@ -150,6 +163,7 @@ ${generateSectionHTML('Notas de Base', pyramid.base)}
       ...prev,
       [level]: prev[level].filter((_, i) => i !== index)
     }));
+    resetGeneratedHtml();
   };
 
   const updateNote = (level: keyof PyramidData, index: number, field: 'name' | 'imageUrl', value: string) => {
@@ -169,6 +183,7 @@ ${generateSectionHTML('Notas de Base', pyramid.base)}
         return note;
       })
     }));
+    resetGeneratedHtml();
   };
 
   const renderNoteSection = (title: string, level: keyof PyramidData, color: string) => (
@@ -275,6 +290,7 @@ ${generateSectionHTML('Notas de Base', pyramid.base)}
                       setPyramidLoaded(false);
                       setHtmlInput('');
                       setGeneratedHtml('');
+                      setCopied(false);
                     }}
                     className="text-sm text-blue-600 hover:text-blue-700"
                   >
@@ -320,7 +336,8 @@ ${generateSectionHTML('Notas de Base', pyramid.base)}
                                   alt={note.name}
                                   className="w-16 h-16 object-cover rounded-lg shadow-sm border border-gray-200"
                                   onError={(e) => {
-                                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3E?%3C/text%3E%3C/svg%3E';
+                                    (e.target as HTMLImageElement).src =
+                                      'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%23999" font-size="12"%3E?%3C/text%3E%3C/svg%3E';
                                   }}
                                 />
                               ) : (
