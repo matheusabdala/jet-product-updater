@@ -120,8 +120,15 @@ ${generateSectionHTML('Notas de Base', pyramid.base)}
   // Gerar HTML completo atualizado
   const generateUpdatedHtml = () => {
     const newPyramidHTML = generatePyramidHTML();
-    const regex = /<section id="section-piramide-olfativa">[\s\S]*?<\/section>/;
-    const updated = originalHtml.replace(regex, newPyramidHTML);
+
+    // Regex mais flexível: aceita outros atributos, aspas simples/dobras, etc.
+    const regex = /<section[^>]*id=["']section-piramide-olfativa["'][^>]*>[\s\S]*?<\/section>/i;
+
+    // Se achar a section, substitui; senão, só anexa no final (opcional)
+    const updated = regex.test(originalHtml)
+      ? originalHtml.replace(regex, newPyramidHTML)
+      : `${originalHtml}\n${newPyramidHTML}`;
+
     setGeneratedHtml(updated);
   };
 
